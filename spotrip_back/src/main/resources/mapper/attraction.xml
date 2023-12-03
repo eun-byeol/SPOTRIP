@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssafy.spotrip.attraction.model.dao.AttractionDao">
+
+    <resultMap type="Attraction" id="attraction">
+        <result column="id" property="id"/>
+        <result column="content_type_id" property="contentTypeId"/>
+        <result column="content_sub_type" property="contentSubType"/>
+        <result column="title" property="title"/>
+        <result column="addr1" property="addr1"/>
+        <result column="addr2" property="addr2"/>
+        <result column="tel" property="tel"/>
+        <result column="image" property="image"/>
+        <result column="sido_code" property="sidoCode"/>
+        <result column="gugun_code" property="gugunCode"/>
+        <result column="latitude" property="latitude"/>
+        <result column="longitude" property="longitude"/>
+    </resultMap>
+
+    <sql id="search">
+        <if test="gugunCode != null">
+            and left(gugun_code, 4) = left(#{gugunCode}, 4)
+        </if>
+        <if test="contentTypeId != 0">
+            and content_type_id = #{contentTypeId}
+        </if>
+        <if test="contentSubType != null">
+            and content_sub_type like #{contentSubType}
+        </if>
+    </sql>
+
+    <select id="listAttraction" parameterType="map" resultMap="attraction">
+        select *
+        from attraction
+        <where>
+            <include refid="search"/>
+        </where>
+    </select>
+
+    <select id="listAttractionPlanByBoardId" parameterType="int" resultMap="attraction">
+        select a.id, a.content_type_id, a.content_sub_type, a.title, a.addr1, a.addr2, a.tel, a.image, a.sido_code, a.gugun_code, a.latitude, a.longitude
+        from plan p left join attraction a
+        on p.attraction_id = a.id
+        where p.board_id = #{boardId}
+        order by order_number;
+    </select>
+</mapper>

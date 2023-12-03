@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssafy.spotrip.board.model.dao.BoardDao">
+
+    <resultMap type="Board" id="article">
+        <result column="id" property="id"/>
+        <result column="member_id" property="memberId"/>
+        <result column="title" property="title"/>
+        <result column="content" property="content"/>
+        <result column="recruits" property="recruits"/>
+        <result column="category" property="category"/>
+        <result column="image" property="image"/>
+        <result column="departure_date" property="departureDate"/>
+        <result column="arrival_date" property="arrivalDate"/>
+        <result column="views" property="views"/>
+        <result column="created_time" property="createdTime"/>
+        <result column="updated_time" property="updatedTime"/>
+        <result column="sido_code" property="sidoCode"/>
+    </resultMap>
+
+    <insert id="addArticle" parameterType="Board">
+        insert into board (member_id, title, content, recruits, category, image, departure_date, arrival_date, views, created_time, updated_time, sido_code)
+        values(#{memberId}, #{title},  #{content}, #{recruits}, #{category}, #{image}, #{departureDate}, #{arrivalDate}, 0, now(), now(), #{sidoCode})
+        <selectKey resultType="int" keyProperty="id" order="AFTER">
+            select last_insert_id()
+        </selectKey>
+    </insert>
+
+    <sql id="search">
+        <if test="sidoCode != '' and sidoCode != 'all'">
+            and sido_code like #{sidoCode}
+        </if>
+        <if test="category != '' and category != 'all'">
+            and category like #{category}
+        </if>
+    </sql>
+
+    <select id="listArticle" parameterType="map" resultMap="article">
+        select *
+        from board
+        <where>
+            <include refid="search"/>
+        </where>
+        order by id desc
+        limit #{start}, #{listSize}
+    </select>
+
+    <select id="getTotalArticleCount" parameterType="map" resultType="int">
+        select count(id)
+        from board
+        <where>
+            <include refid="search"/>
+        </where>
+    </select>
+
+<!--    <select id="getTotalCommentCount" parameterType="int" resultType="int">-->
+<!--        select count(id)-->
+<!--        from comment-->
+<!--        where id = #{id}-->
+<!--    </select>-->
+
+    <update id="updateViews" parameterType="int">
+        update board
+        set views = views + 1
+        where id = #{id}
+    </update>
+
+    <select id="getArticle" parameterType="int" resultMap="article">
+        select *
+        from board
+        where id = #{id}
+    </select>
+
+    <update id="modifyArticle" parameterType="Board">
+        update board
+        set title = #{title}, content = #{content}, recruits = #{recruits}, category = #{category}, image = #{image},
+            departure_date = #{departureDate}, arrival_date = #{arrivalDate}, sido_code = #{sidoCode}
+        where id = #{id}
+    </update>
+
+    <delete id="deleteArticle" parameterType="int">
+        delete from board
+        where id = #{id}
+    </delete>
+
+    <insert id="addPlan" parameterType="Plan">
+        insert into plan (order_number, board_id, attraction_id)
+        value (#{orderNumber}, #{boardId}, #{attractionId})
+    </insert>
+
+    <delete id="deletePlanByBoardId" parameterType="int">
+        delete from plan
+        where board_id = #{boardId}
+    </delete>
+</mapper>
